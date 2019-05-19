@@ -8,6 +8,7 @@ import subprocess
 import sys
 import json
 from pkg_resources import parse_version
+from difflib import get_close_matches
 import random
 
 import discord
@@ -268,7 +269,7 @@ class Plugins(commands.Cog):
 
     @plugin.command(name='registry', aliases=['list'])
     @checks.has_permissions(PermissionLevel.OWNER)
-    async def plugin_registry(self, ctx, plugin_name=None):
+    async def plugin_registry(self, ctx, *, plugin_name:str=None):
         """Shows a list of all approved plugins."""
 
         embeds = []
@@ -285,14 +286,19 @@ class Plugins(commands.Cog):
                     return index
                 index += 1
 
-        if plugin_name and plugin_name in self.registry:
+        index = 0
+        if plugin_name in self.registry:
             index = find_index(plugin_name)
-        else:
-            return await ctx.send(embed=discord.Embed(
+        elif plugin_name is not None:
+            em = discord.Embed(
                     color=discord.Color.red(), 
                     description=f'Could not find a plugin with name "{plugin_name}" within the registry.'
                     )
-                    )
+
+            matches = get_close_matches(plugin_name, self.registry.keys())
+            if matches:
+                em.add_field(name='Perhaps you meant', value='\n'.join(f'`{m}`' for m in matches))
+            return await ctx.send(embed=em)
 
         for name, info in registry:
             repo = f"https://github.com/{info['repository']}"
