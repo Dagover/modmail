@@ -510,8 +510,7 @@ class Thread:
         image_links = [
             (link, None)
             for link in re.findall(
-                r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)",
-                message.content,
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", message.content
             )
         ]
 
@@ -669,7 +668,7 @@ class ThreadManager:
                 self.bot.modmail_guild.text_channels, topic=f"User ID: {recipient_id}"
             )
             if channel:
-                thread = Thread(self, recipient, channel)
+                thread = Thread(self, recipient or recipient_id, channel)
                 self.cache[recipient_id] = thread
                 thread.ready = True
         return thread
